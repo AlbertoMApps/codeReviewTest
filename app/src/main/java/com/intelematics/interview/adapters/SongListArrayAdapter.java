@@ -1,5 +1,7 @@
 package com.intelematics.interview.adapters;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.util.Log;
@@ -15,9 +17,20 @@ import android.widget.TextView;
 import com.intelematics.interview.R;
 import com.intelematics.interview.SongListActivity;
 import com.intelematics.interview.db.DBManager;
+import com.intelematics.interview.db.SongManager;
 import com.intelematics.interview.models.Song;
+import com.intelematics.interview.net.ConnectionManager;
 import com.squareup.picasso.Picasso;
 
+import org.apache.http.util.ByteArrayBuffer;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
 /**
@@ -61,6 +74,18 @@ public class SongListArrayAdapter extends RecyclerView.Adapter<SongListArrayAdap
 					.load(song.getCoverURL())
 					.into(holder.albumCover);
 			Log.i(TAG, "pos: " + position + " size: " + filteredSongsList.size());
+
+
+/**
+ * This should be generating the bitmaps and setImage from different thread. I can see thread problems in it, so I use Picasso to avoid it...
+ */
+//			if(song.getCover() != null){
+//				holder.albumCover.setImageBitmap(song.getCover());
+//			} else {
+//				holder.albumCover.setImageResource(R.drawable.img_cover);
+////				progressBar.setVisibility(View.VISIBLE);
+//				getCover(song, holder);
+//			}
 		}
 
 
@@ -192,8 +217,8 @@ public class SongListArrayAdapter extends RecyclerView.Adapter<SongListArrayAdap
 	}
 
 
-//    private void getCover(Song song){
-//        if(song.getCover() == null){
+    private void getCover(Song song, ViewHolder holder){
+        if(song.getCover() == null){
 //            ConnectionManager connectionManager = new ConnectionManager(activity, song.getCoverURL());
 //            byte[] imageByteArray = connectionManager.requestImage().buffer();
 //            ByteArrayInputStream imageStream = new ByteArrayInputStream(imageByteArray);
@@ -202,7 +227,32 @@ public class SongListArrayAdapter extends RecyclerView.Adapter<SongListArrayAdap
 //
 //            SongManager songManager = new SongManager(activity, dbManager);
 //            songManager.saveCover(song, imageByteArray);
-//        }
-//    }
+			URL url = null;
+			ByteArrayBuffer baf = new ByteArrayBuffer(1024);
+			try {
+				url = new URL(song.getCoverURL());
+
+				//open the connection
+				URLConnection ucon = url.openConnection();
+				//buffer the download
+				InputStream is = ucon.getInputStream();
+				BufferedInputStream bis = new BufferedInputStream(is,1024);
+				Bitmap theImage = BitmapFactory.decodeStream(bis);
+				//set the cover for next print abd in the db
+				song.setCover(theImage);
+				SongManager songManager = new SongManager(activity, dbManager);
+//            	songManager.saveCover(song, current);
+
+				holder.albumCover.setImageBitmap(theImage);
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+
+    }
 
 }
