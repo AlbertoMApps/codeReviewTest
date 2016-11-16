@@ -7,3 +7,4 @@ Code review the application and make comments on the flaws, errors and possible 
 Be as thorough as you can and tell us why and how you would do it. There are multiple ways to do things and while we might not agree with your suggestions we are looking for someone who is able to apply best practices, spot technical errors and areas of opportunity and suggest new or different ways to do things.
 
 Feel free to suggest any 3rd party libraries or tools.
+# codeReviewTest and instructions
